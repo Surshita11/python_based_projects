@@ -1,1 +1,64 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load dataset
+data = pd.read_csv('customer_churn_data.csv')
+
+# ETL: Data Cleaning and Preprocessing
+# Handle missing values
+data.fillna(data.mean(), inplace=True)
+
+# Convert categorical variables to numerical
+data = pd.get_dummies(data, drop_first=True)
+
+# Feature Selection
+X = data.drop('Churn', axis=1)  # Features
+y = data['Churn']  # Target variable
+
+# Data Splitting
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardizing the data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Build Machine Learning Model
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
+
+# Predictions
+y_pred = model.predict(X_test)
+
+# Evaluate Model
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+print("Classification Report:\n", classification_report(y_test, y_pred))
+
+# Achieve and validate 85% accuracy
+if accuracy >= 0.85:
+    print("Model achieved the desired accuracy!")
+else:
+    print("Model did not meet the desired accuracy. Further tuning required.")
+
+# Data Visualization
+plt.figure(figsize=(10, 6))
+sns.heatmap(pd.DataFrame(data.corr()), annot=True, fmt=".2f", cmap="coolwarm")
+plt.title("Feature Correlation Heatmap")
+plt.show()
+
+# Integration into GCP (Conceptual Step)
+# Load the cleaned data into Google Cloud Storage for advanced analytics
+# Example: Use the `google-cloud-storage` Python library to upload data
+# from google.cloud import storage
+# client = storage.Client()
+# bucket = client.bucket('your-bucket-name')
+# blob = bucket.blob('cleaned_data.csv')
+# blob.upload_from_filename('cleaned_data.csv')
 
